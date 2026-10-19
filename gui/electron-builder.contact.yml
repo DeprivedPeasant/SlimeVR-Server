@@ -1,0 +1,24 @@
+extends: ./electron-builder.yml
+appId: dev.deprivedpeasant.SlimeVRContactHips
+productName: SlimeVR Contact Hips
+
+win:
+  signAndEditExecutable: false
+  extraFiles:
+    - from: ../server/desktop/build/libs/slimevr.jar
+      to: slimevr.jar
+    - from: ../server/core/resources
+      to: .
+      filter: ["**/*"]
+    - from: ../bindings-provider/build/win-x64/Release/SlimeVR-Bindings-Provider.exe
+      to: SlimeVR-Bindings-Provider.exe
+    - from: ../bindings-provider/build/win-x64/openvr_api.dll
+      to: openvr_api.dll
+    - from: ../build/contact-portable-runtime
+      to: jre
+    - from: ../docs/contact-aware-hips.md
+      to: CONTACT-HIPS-README.md
+    - from: ../LICENSE-MIT
+      to: LICENSE-MIT
+    - from: ../LICENSE-APACHE
+      to: LICENSE-APACHE

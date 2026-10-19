@@ -212,6 +212,8 @@ class HumanSkeleton(
 
 	// Modules
 	var legTweaks = LegTweaks(this)
+	val contactAwareHips = ContactAwareHipStabilizer()
+	private var lastContactUpdateNanos = 0L
 	var tapDetectionManager: TapDetectionManager? = null
 	var localizer = Localizer(this)
 	var ikSolver = IKSolver(headBone)
@@ -371,6 +373,7 @@ class HumanSkeleton(
 	 * Set input trackers from a list
 	 */
 	fun setTrackersFromList(trackers: List<Tracker>) {
+		contactAwareHips.reset()
 		// Head
 		headTracker = getTrackerForSkeleton(trackers, TrackerPosition.HEAD)
 		neckTracker = getTrackerForSkeleton(trackers, TrackerPosition.NECK)
@@ -555,10 +558,53 @@ class HumanSkeleton(
 		updateComputedTrackers()
 
 		// Don't run post-processing if the tracking is paused
-		if (pauseTracking) return
+		if (pauseTracking) {
+			contactAwareHips.reset()
+			lastContactUpdateNanos = 0L
+			return
+		}
 
 		legTweaks.tweakLegs()
 		localizer.update()
+		stabilizeHipContact()
+	}
+
+	private fun stabilizeHipContact() {
+		if (!contactAwareHips.enabled) return
+		val required = listOf(headTracker, chestTracker, hipTracker, leftUpperLegTracker, rightUpperLegTracker, leftLowerLegTracker, rightLowerLegTracker)
+		if (required.any { it == null || !it.status.sendData } ||
+			headTracker?.hasPosition != true ||
+			hipTracker?.hasPosition == true ||
+			localizer.getEnabled() ||
+			!legTweaks.floorCalibrated
+		) {
+			contactAwareHips.reset()
+			lastContactUpdateNanos = 0L
+			return
+		}
+		val now = System.nanoTime()
+		val dt = if (lastContactUpdateNanos == 0L) 0f else (now - lastContactUpdateNanos) / 1e9f
+		lastContactUpdateNanos = now
+		val hip = computedHipTracker ?: return
+		val frame = ContactAwareHipStabilizer.Frame(
+			hip = hipTrackerBone.getTailPosition(),
+			chest = chestTrackerBone.getTailPosition(),
+			leftKnee = leftUpperLegBone.getTailPosition(),
+			rightKnee = rightUpperLegBone.getTailPosition(),
+			head = headBone.getPosition(),
+			chestRotation = chestBone.getGlobalRotation(),
+			hipRotation = hipBone.getGlobalRotation(),
+			floor = legTweaks.floorLevel,
+			outputHipY = hip.position.y,
+			leftHand = leftHandTracker?.takeIf { it.hasPosition && it.status.sendData }?.position,
+			rightHand = rightHandTracker?.takeIf { it.hasPosition && it.status.sendData }?.position,
+		)
+		val previousContact = contactAwareHips.contact
+		val offset = contactAwareHips.update(frame, dt)
+		if (previousContact != contactAwareHips.contact) {
+			LogManager.info("[ContactAwareHips] $previousContact -> ${contactAwareHips.contact}")
+		}
+		hip.position += Vector3(0f, offset, 0f)
 	}
 
 	/**
@@ -1205,6 +1251,11 @@ class HumanSkeleton(
 			SkeletonConfigToggles.ENFORCE_CONSTRAINTS -> enforceConstraints = newValue
 
 			SkeletonConfigToggles.CORRECT_CONSTRAINTS -> correctConstraints = newValue
+
+			SkeletonConfigToggles.CONTACT_AWARE_HIPS -> {
+				contactAwareHips.enabled = newValue
+				lastContactUpdateNanos = 0L
+			}
 		}
 	}
 
@@ -1223,6 +1274,7 @@ class HumanSkeleton(
 
 	// Skeleton Config bone lengths
 	fun updateNodeOffset(boneType: BoneType, offset: Vector3) {
+		contactAwareHips.reset()
 		var transOffset = offset
 
 		// If no head position, headShift and neckLength = 0

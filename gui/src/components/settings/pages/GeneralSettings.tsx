@@ -82,6 +82,7 @@ export type SettingsForm = {
     usePosition: boolean;
     enforceConstraints: boolean;
     correctConstraints: boolean;
+    contactAwareHips: boolean;
   };
   ratios: {
     imputeWaistFromChestHip: number;
@@ -147,6 +148,7 @@ const defaultValues: SettingsForm = {
     usePosition: true,
     enforceConstraints: true,
     correctConstraints: true,
+    contactAwareHips: false,
   },
   ratios: {
     imputeWaistFromChestHip: 0.3,
@@ -291,6 +293,7 @@ export function GeneralSettings() {
       toggles.usePosition = values.toggles.usePosition;
       toggles.enforceConstraints = values.toggles.enforceConstraints;
       toggles.correctConstraints = values.toggles.correctConstraints;
+      toggles.contactAwareHips = values.toggles.contactAwareHips;
       modelSettings.toggles = toggles;
     }
 
@@ -806,6 +809,22 @@ export function GeneralSettings() {
             <Typography variant="main-title">
               {l10n.getString('settings-general-fk_settings')}
             </Typography>
+            <div className="flex flex-col pt-2 pb-4 gap-2">
+              <CheckBox
+                variant="toggle"
+                outlined
+                control={control}
+                name="toggles.contactAwareHips"
+                label={l10n.getString(
+                  'settings-general-fk_settings-contact_hips'
+                )}
+              />
+              <Typography>
+                {l10n.getString(
+                  'settings-general-fk_settings-contact_hips-description'
+                )}
+              </Typography>
+            </div>
             <div className="flex flex-col pt-2 pb-4 gap-2">
               <Typography variant="section-title">
                 {l10n.getString(

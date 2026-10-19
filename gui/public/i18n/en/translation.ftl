@@ -607,6 +607,8 @@ settings-stay_aligned-debug-copy-label = Copy settings to clipboard
 
 ## FK/Tracking settings
 settings-general-fk_settings = Tracking settings
+settings-general-fk_settings-contact_hips = Contact-aware hip stabilization (experimental)
+settings-general-fk_settings-contact_hips-description = Reduce small vertical hip wobble while lying on your back on the floor or resting on hands and knees. Requires chest, hip, thigh and ankle trackers. Stay still briefly to engage; move or change pose to release. Turn off for original tracking. Floor poses only; beds and sofas are not detected.
 
 # Floor clip:
 # why the name - came from the idea of noclip in video games, but is the opposite where clipping to the floor is a desired feature

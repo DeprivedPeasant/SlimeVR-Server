@@ -256,6 +256,9 @@ class RPCSettingsHandler(var rpcHandler: RPCHandler, var api: ProtocolAPI) {
 				hpm.setToggle(SkeletonConfigToggles.USE_POSITION, toggles.usePosition())
 				hpm.setToggle(SkeletonConfigToggles.ENFORCE_CONSTRAINTS, toggles.enforceConstraints())
 				hpm.setToggle(SkeletonConfigToggles.CORRECT_CONSTRAINTS, toggles.correctConstraints())
+				if (toggles.hasContactAwareHips()) {
+					hpm.setToggle(SkeletonConfigToggles.CONTACT_AWARE_HIPS, toggles.contactAwareHips())
+				}
 			}
 
 			if (ratios != null) {

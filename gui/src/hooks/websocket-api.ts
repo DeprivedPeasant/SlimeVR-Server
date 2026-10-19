@@ -104,6 +104,9 @@ export function useProvideWebsocketApi(): WebSocketApi {
   const sendRPCPacket = (type: RpcMessage, data: RPCPacketType): void => {
     if (webSocketRef?.current?.readyState !== WebSocket.OPEN) return;
     const fbb = new Builder(1);
+    // FlatBuffers 22 otherwise omits false optional booleans, making "off"
+    // indistinguishable from "leave unchanged" in partial settings updates.
+    if (type === RpcMessage.ChangeSettingsRequest) fbb.forceDefaults(true);
 
     const message = new MessageBundleT();
 

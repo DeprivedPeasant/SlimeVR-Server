@@ -131,7 +131,12 @@ class LegTweaks(private val skeleton: HumanSkeleton) {
 
 	fun resetFloorLevel() {
 		initialized = false
+		floorCalibrated = false
+		skeleton.contactAwareHips.reset()
 	}
+
+	var floorCalibrated = false
+		private set
 
 	fun setFloorClipEnabled(floorClipEnabled: Boolean) {
 		this.floorClipEnabled = floorClipEnabled
@@ -155,6 +160,7 @@ class LegTweaks(private val skeleton: HumanSkeleton) {
 	}
 
 	fun resetBuffer() {
+		skeleton.contactAwareHips.reset()
 		bufferInvalid = true
 	}
 
@@ -240,6 +246,7 @@ class LegTweaks(private val skeleton: HumanSkeleton) {
 
 	private fun setFloorLevel(floorLevel: Float) {
 		this.floorLevel = floorLevel
+		floorCalibrated = true
 		hipToFloorDist = hipPosition.y - floorLevel
 	}
 
